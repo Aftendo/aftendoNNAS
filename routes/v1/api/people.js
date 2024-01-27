@@ -1,5 +1,6 @@
 const express = require('express');
 const logger = require('logger');
+const knex = require('db');
 const auth = require('auth');
 const nn_error = require('nn_error');
 const route = express.Router();
@@ -45,6 +46,21 @@ route.get("/test", (req, res) => {
 	You don't need to send any data with the request.(?)
 */
 route.get("/:network_id", (req, res) => {
+	if(req.params.network_id.length < 6 || req.params.network_id.length > 16){
+		res.status(403).send(nn_error.createError("1104", "User ID format is not valid"));
+	}
+	knex.select('id')
+        .from('people')
+        .where('user_id', req.params.network_id)
+		.then(rows => {
+            if (rows.length != 0) {
+				res.status(401).send(nn_error.createError("0100", "Account ID already exists"));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send(nn_error.createError("2001", "Internal server error"));
+        })
     res.send(req.params.network_id);
 })
 
