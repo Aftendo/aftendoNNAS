@@ -8,7 +8,7 @@ This is still a heavy work in progress so please don't use it, you don't want to
 # Why is the main branch getting updated so slowly?
 you should look at the dev branch. code is pushed more frequently there.
 # Can I use this?
-Yeah. Just make sure it's open source, and disclose your changes.
+Yeah. Just make sure it's open source, and disclose your changes. (Basically fork the repo and make your changes there!! Then the git history will have all the changes disclosed, basically. I think. Don't take that as legal advice.)
 # I see code from Pretendo. (not yet as of right now)
 Yes, I know. It's why our license for our code matches the same one from Pretendo's account server.
 
