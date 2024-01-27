@@ -13,9 +13,9 @@ route.use((req, res, next) => {
 });
 
 route.get("/agreements/Nintendo-Network-EULA/:region", (req, res) => {
-    const region = req.query['region']; // TODO: region specific agreements?
+    const region = req.query['region']; // TODO: create other region specific agreements
     let agreements = path.resolve(__dirname, "agreements");
-    const agreementRegion = path.join(agreementsFolder, `${region}.xml`);
+    const agreementRegion = path.join(agreements, `${region}.xml`);
     res.setHeader("Content-Type", "application/xml");
     if(fs.existsSync(agreementRegion)){
         res.sendFile(agreementRegion);

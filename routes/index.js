@@ -1,5 +1,9 @@
 module.exports = [
     {
+        path: "/v1/api/devices",
+        route: require("./v1/api/devices.js")
+    },
+    {
         path: "/v1/api/people",
         route: require("./v1/api/people.js")
     },
