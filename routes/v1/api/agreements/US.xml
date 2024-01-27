@@ -1,26 +1,3 @@
-<agreements>
-    <agreement>
-        <country>US</country>
-        <language>en</language>
-        <language_name>English</language_name>
-        <publish_date>2024-01-27T20:07:35</publish_date>
-        <texts xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="chunkedStoredAgreementText">
-            <agree_text><![CDATA[I Accept]]></agree_text>
-            <main_title><![CDATA[AltNNAS Services Agreement]]></main_title>
-            <non_agree_text><![CDATA[I Decline]]></non_agree_text>
-            <main_text index="1"><![CDATA[Network Services Agreement 
-                wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww]]>
-            </main_text>
-            <main_text index="5"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="13"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="16"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="18"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="19"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="20"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="21"><![CDATA[wwwwwwwww]]></main_text>
-            <main_text index="22"><![CDATA[wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww]]></main_text>
-        </texts>
-        <type>NINTENDO-NETWORK-EULA</type>
-        <version>0001</version>
-    </agreement>
-</agreements>
+<agreements><agreement><country>US</country><language>en</language><language_name>English</language_name><publish_date>2014-09-29T20:07:35</publish_date><texts xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="chunkedStoredAgreementText"><agree_text><![CDATA[I Accept]]></agree_text><main_title><![CDATA[AltNNAS Network Services Agreement]]></main_title><non_agree_text><![CDATA[I Decline]]></non_agree_text><main_text index="1"><![CDATA[Network Services Agreement
+Sex.
+]]></main_text></texts><type>NINTENDO-NETWORK-EULA</type><version>0301</version></agreement></agreements>
