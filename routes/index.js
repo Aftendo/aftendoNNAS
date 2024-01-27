@@ -16,6 +16,10 @@ module.exports = [
         route: require("./v1/api/support.js")
     },
     {
+        path: "/v1/api/content",
+        route: require("./v1/api/content.js")
+    },
+    {
         path: "/webui",
         route: require("./webui/index.js")
     }
