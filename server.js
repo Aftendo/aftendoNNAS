@@ -3,6 +3,7 @@ const express = require("express");
 const config = require("./config.json");
 const logger = require("logger")
 const knex = require("db");
+const utils = require("utils");
 const app = express();
 
 const path = require("path");
@@ -17,10 +18,10 @@ logger.log("[main]: Connecting to DB...");
 //Database
 try {
   knex.raw('select 1+1 as result').then(function () {
-    logger.log("[main]: Connected!");
+    logger.log("[main]: connected!");
   });
 } catch(e) {
-  throw "Failed to connect to database.";
+  throw `Failed to connect to database.\n${e}`;
 }
 
 //Log all incoming HTTP requests
