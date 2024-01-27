@@ -7,17 +7,33 @@ const path = require("path");
 
 const routes = require("./routes/index.js")
 
+//Database
+const knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    host : '127.0.0.1',
+    port : 3306,
+    user : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  }
+});
+
+
 //Log all incoming HTTP requests
 app.use((req, res, next) => {
   logger.http_log(req);
   next();
 });
 
-logger.log("[main]: Setting up static directories.")
+//Turns all XML request data into a readabl;e
+
+logger.log("[main]: Creating static directories.")
 app.use(express.static(path.join(__dirname, "/static_index")));
 app.use("/static", express.static(path.join(__dirname, "/static")));
 
-logger.log("[main]: Setting up routes.")
+//Creating all rourt
+logger.log("[main]: Creating all routes.")
 for (const route of routes) {
   app.use(route.path, route.route)
 }
