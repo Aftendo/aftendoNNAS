@@ -10,11 +10,16 @@ const xmlbuilder = require("xmlbuilder")
     This is the api path the Wii U/3DS calls to when creating a new user.
     Content-Type: XML
 */
+route.use((req, res, next) => {
+    auth.checkAuth(req, res);
+    next();
+});
+
 route.post("/", (req, res) => {
     const person = req.body.person;
     const headers = req.headers;
 
-    logger.log(`[/v1/api/people] Account Creation Process Started`);
+    logger.log(`[/v1/api/people] Account creation`);
 
     const xml = xmlbuilder.create({person: {
         pid: 1

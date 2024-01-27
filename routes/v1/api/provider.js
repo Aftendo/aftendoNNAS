@@ -6,6 +6,11 @@ const route = express.Router();
 
 const xmlbuilder = require("xmlbuilder")
 
+route.use((req, res, next) => {
+    auth.checkAuth(req, res);
+    next();
+});
+
 route.get("/service_token/@me", (req, res) => {
     const client_id = req.query['client_id'];
 

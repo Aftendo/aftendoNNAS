@@ -6,6 +6,11 @@ const route = express.Router();
 
 const xmlbuilder = require("xmlbuilder")
 
+route.use((req, res, next) => {
+    auth.checkAuth(req, res);
+    next();
+});
+
 route.post("/access_token/generate", (req, res) => {
     res.send(xmlbuilder.create({OAuth20 : {
         access_token : {
