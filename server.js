@@ -9,6 +9,7 @@ const path = require("path");
 const routes = require("./routes/index.js");
 
 const bodyParser = require('body-parser');
+const nn_error = require("./lib/nn_error.js");
 require('body-parser-xml')(bodyParser);
 
 logger.log("[main]: Connecting to DB...");
@@ -53,7 +54,7 @@ for (const route of routes) {
 
 app.use("/*", (req, res) => {
   logger.warn(`Unknown route!`);
-  res.sendStatus(404);
+  nn_error.createError("0008", "Not found");
 })
 
 app.listen(config.http.port, () => {
