@@ -5,7 +5,10 @@ const app = express();
 
 const path = require("path");
 
-const routes = require("./routes/index.js")
+const routes = require("./routes/index.js");
+
+const bodyParser = require('body-parser');
+require('body-parser-xml')(bodyParser);
 
 //Database
 const knex = require('knex')({
@@ -26,7 +29,8 @@ app.use((req, res, next) => {
   next();
 });
 
-//Turns all XML request data into a readabl;e
+//Turns all XML request data into a readable JSON file
+app.use(bodyParser.xml())
 
 logger.log("[main]: Creating static directories.")
 app.use(express.static(path.join(__dirname, "/static_index")));

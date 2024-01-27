@@ -7,6 +7,7 @@ const route = express.Router();
 */
 route.post("/", (req, res) => {
     console.log(req.get("content-type"));
+    console.log(req.body)
 })
 
 /*
