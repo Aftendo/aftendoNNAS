@@ -11,8 +11,9 @@ const xmlbuilder = require("xmlbuilder")
     Content-Type: XML
 */
 route.use((req, res, next) => {
-    auth.checkAuth(req, res);
-    next();
+    if(auth.checkAuth(req, res)){
+		next();
+	}
 });
 
 route.post("/", (req, res) => {

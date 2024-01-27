@@ -8,8 +8,9 @@ const route = express.Router();
 const xmlbuilder = require("xmlbuilder")
 
 route.use((req, res, next) => {
-    auth.checkAuth(req, res);
-    next();
+    if(auth.checkAuth(req, res)){
+        next();
+    }
 });
 
 route.post("/validate/email", (req, res) => {
