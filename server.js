@@ -1,3 +1,4 @@
+require("./aliases")();
 const express = require("express");
 const config = require("./config.json");
 const logger = require("./lib/logger.js")
@@ -36,11 +37,16 @@ logger.log("[main]: Creating static directories.")
 app.use(express.static(path.join(__dirname, "/static_index")));
 app.use("/static", express.static(path.join(__dirname, "/static")));
 
-//Creating all rourt
+//Creating all routes
 logger.log("[main]: Creating all routes.")
 for (const route of routes) {
   app.use(route.path, route.route)
 }
+
+app.use("/*", (req, res) => {
+  logger.warn(`Unknown route!`);
+  res.status(404).send("404");
+})
 
 app.listen(config.http.port, () => {
   logger.log(`[main]: altnnas listening on ${config.http.port}`);

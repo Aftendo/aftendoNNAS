@@ -1,13 +1,35 @@
 const express = require('express');
+const logger = require('logger');
+const auth = require('auth');
+const nn_error = require('nn_error');
 const route = express.Router();
+
+const xmlbuilder = require("xmlbuilder")
 
 /*
     This is the api path the Wii U/3DS calls to when creating a new user.
     Content-Type: XML
 */
 route.post("/", (req, res) => {
-    console.log(req.get("content-type"));
-    console.log(req.body)
+    const person = req.body.person;
+    const headers = req.headers;
+
+    logger.log(`[/v1/api/people] Account Creation Process Started`);
+
+    const xml = xmlbuilder.create({person: {
+        pid: 1
+    }}).end({pretty : true, allowEmpty : true})
+
+    res.send(xml);
+})
+
+/*
+    This is a test path.
+    Content-Type: XML
+*/
+route.get("/test", (req, res) => {
+    res.setHeader("Content-Type", "application/xml")
+    res.send(nn_error.createError(1230, "URGAY"));
 })
 
 /*
