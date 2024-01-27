@@ -15,11 +15,20 @@ require('body-parser-xml')(bodyParser);
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
+    host: config.db.host,
+    port: config.db.port,
+    user: config.db.user,
+    password: config.db.pass,
+    database: config.db.name
+  },
+  pool: {
+    afterCreate: function (conn, done) {
+      conn.query('SET timezone="EST";', function (err) {
+        if (err) {
+          logger.error("Failed to execute timezone command, you may not be connected to the DB!");
+        }
+      });
+    }
   }
 });
 
