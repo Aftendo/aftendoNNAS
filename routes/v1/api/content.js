@@ -17,12 +17,12 @@ route.get("/agreements/Nintendo-Network-EULA/:region/@latest", (req, res) => {
     let agreements = path.resolve(__dirname, "agreements");
     const agreementRegion = path.join(agreements, `${region}.xml`);
     res.setHeader("Content-Type", "application/xml");
-    if(fs.existsSync(agreementRegion)){
+    if (fs.existsSync(agreementRegion)) {
         res.sendFile(agreementRegion);
     } else {
         logger.error(`[content]: File ${agreementRegion} cannot be found.`);
         res.status(404).send(nn_error.createError("0008", "Not found"));
     }
-})
+});
 
-module.exports = route
+module.exports = route;
