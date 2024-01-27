@@ -11,6 +11,7 @@ const routes = require("./routes/index.js");
 const bodyParser = require('body-parser');
 require('body-parser-xml')(bodyParser);
 
+logger.log("[main]: Connecting to DB...");
 //Database
 const knex = require('knex')({
   client: 'mysql',
@@ -20,18 +21,16 @@ const knex = require('knex')({
     user: config.db.user,
     password: config.db.pass,
     database: config.db.name
-  },
-  pool: {
-    afterCreate: function (conn, done) {
-      conn.query('SET timezone="EST";', function (err) {
-        if (err) {
-          logger.error("Failed to execute timezone command, you may not be connected to the DB!");
-        }
-      });
-    }
   }
 });
 
+try {
+  knex.raw('select 1+1 as result').then(function () {
+    logger.log("[main]: Connected!");
+  });
+} catch(e) {
+  throw "Failed to connect to database.";
+}
 
 //Log all incoming HTTP requests
 app.use((req, res, next) => {
