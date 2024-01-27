@@ -14,6 +14,15 @@ const bodyParser = require('body-parser');
 const nn_error = require("nn_error");
 require('body-parser-xml')(bodyParser);
 
+function logHeaders(req, res, next) {
+  const _setHeader = res.setHeader;
+  res.setHeader = function(name, value) {
+      console.log(`Header set: ${name}: ${value}`);
+      _setHeader.call(this, name, value);
+  };
+  next();
+}
+
 logger.log("[main]: Connecting to DB...");
 //Database
 try {
@@ -29,6 +38,10 @@ app.use((req, res, next) => {
   logger.http_log(req);
   next();
 });
+
+if(config.env.debug){
+  app.use(logHeaders);
+}
 
 //Turns all XML request data into a readable JSON file
 app.use(bodyParser.xml())

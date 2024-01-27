@@ -48,6 +48,7 @@ route.get("/test", (req, res) => {
 route.get("/:network_id", (req, res) => {
 	if(req.params.network_id.length < 6 || req.params.network_id.length > 16){
 		res.status(403).send(nn_error.createError("1104", "User ID format is not valid"));
+		return;
 	}
 	knex.select('id')
         .from('people')
@@ -55,13 +56,14 @@ route.get("/:network_id", (req, res) => {
 		.then(rows => {
             if (rows.length != 0) {
 				res.status(401).send(nn_error.createError("0100", "Account ID already exists"));
-            }
+            } else {
+				res.status(200).send(req.params.network_id);
+			}
         })
         .catch(err => {
             console.error(err);
             res.status(500).send(nn_error.createError("2001", "Internal server error"));
         })
-    res.send(req.params.network_id);
 })
 
 module.exports = route;
