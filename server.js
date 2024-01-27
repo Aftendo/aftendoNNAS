@@ -1,7 +1,7 @@
 require("./aliases")();
 const express = require("express");
 const config = require("./config.json");
-const logger = require("./lib/logger.js")
+const logger = require("logger")
 const app = express();
 
 const path = require("path");
@@ -9,7 +9,7 @@ const path = require("path");
 const routes = require("./routes/index.js");
 
 const bodyParser = require('body-parser');
-const nn_error = require("./lib/nn_error.js");
+const nn_error = require("nn_error");
 require('body-parser-xml')(bodyParser);
 
 logger.log("[main]: Connecting to DB...");
@@ -53,8 +53,11 @@ for (const route of routes) {
 }
 
 app.use("/*", (req, res) => {
-  logger.warn(`Unknown route!`);
-  nn_error.createError("0008", "Not found");
+  if(config.env.debug){
+    logger.warn(`Unknown route!`);
+  }
+  res.setHeader("Content-Type", "application/xml");
+  res.status(404).send(nn_error.createError("0008", "Not found"));
 })
 
 app.listen(config.http.port, () => {
