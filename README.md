@@ -8,4 +8,13 @@ This is still a heavy work in progress so please don't use it, you don't want to
 # Why is the main branch getting updated so slowly?
 you should look at the dev branch. code is pushed more frequently there.
 # Can I use this?
-as soon as i add the license, sure
+Yeah. Just make sure it's open source, and disclose your changes.
+# I see code from Pretendo. (not yet as of right now)
+Yes, I know. It's why our license for our code matches the same one from Pretendo's account server.
+
+We utilize some utilities that are in the https://github.com/PretendoNetwork/account repository, such as
+- Verifying console certificates
+- Some code to encrypt ServiceTokens
+- More will be added as we use more
+
+
