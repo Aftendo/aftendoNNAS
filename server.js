@@ -53,7 +53,7 @@ for (const route of routes) {
 
 app.use("/*", (req, res) => {
   logger.warn(`Unknown route!`);
-  res.status(404).send("404");
+  res.sendStatus(404);
 })
 
 app.listen(config.http.port, () => {

@@ -35,6 +35,10 @@ route.get("/test", (req, res) => {
 /*
     This is the API path the Wii U/3DS calls to when asking if a Network ID is already taken.
     Content-Type: XML
+
+	If the NNID is already in use, you should send a 401.
+	If the NNID is available, send a 200.
+	You don't need to send any data with the request.(?)
 */
 route.get("/:network_id", (req, res) => {
     res.send(req.params.network_id);
