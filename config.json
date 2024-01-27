@@ -1,0 +1,14 @@
+{
+    "env": {
+        "_comment": "Never run the server in production with debug!",
+        "debug": true
+    },
+
+    "http": {
+        "port": 3001
+    },
+
+    "db": {
+        
+    }
+}
