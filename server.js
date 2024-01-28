@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 });
 
 if(config.env.debug){
-  app.use(logHeaders);
+  //app.use(logHeaders);
 }
 
 //Turns all XML request data into a readable JSON file
