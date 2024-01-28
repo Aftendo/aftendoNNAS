@@ -67,6 +67,7 @@ app.use("/*", (req, res) => {
   res.status(404).send(utils.generateNotFound());
 })
 
-app.listen(config.http.port, () => {
+app.listen(config.http.port, async () => {
   logger.log(`[main]: AltNNAS listening on ${config.http.port}`);
+  console.log(await utils.generateServiceToken());
 })

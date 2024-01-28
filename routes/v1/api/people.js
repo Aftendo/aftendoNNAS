@@ -8,34 +8,65 @@ const fs = require("fs");
 const nn_error = require('nn_error');
 const route = express.Router();
 
-const xmlbuilder = require("xmlbuilder")
+const xmlbuilder = require("xmlbuilder");
+const anid = require('../../../lib/anid');
 
 /*
-    This is the api path the Wii U/3DS calls to when creating a new user.
-    Content-Type: XML
+	This is the api path the Wii U/3DS calls to when creating a new user.
+	Content-Type: XML
 */
+
 route.use((req, res, next) => {
-    auth.checkAuth(req, res, next);
+	auth.checkAuth(req, res, next);
 });
 
 route.post("/", (req, res) => {
-    const person = req.body.person;
-    const headers = req.headers;
+	const person = req.body.person;
+	const headers = req.headers;
+	res.setHeader("Content-Type", "application/xml");
 
-    logger.log(`[/v1/api/people] Account creation`);
+	logger.log(`[/v1/api/people] Account creation`);
 
 	if (!auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])) {
-		if(!auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['x-nintendo-region'], headers['x-nintendo-country'])){
+		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country']) == false) {
 			logger.error(`[people]: Failed to create console data!\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
-			
+			res.status(500).send(utils.generateServerError());
+			return;
+		} else {
+			logger.log(`[people]: Added new console data\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
 		}
 	}
+	
+	const pid = anid.createUser(
+		headers['x-nintendo-platform-id'],
+		headers['x-nintendo-device-id'],
+		person.birth_date,
+		person.user_id,
+		person.password,
+		person.country,
+		person.language,
+		person.tz_name,
+		person.agreement,
+		person.email,
+		person.mii,
+		person.parental_consent,
+		person.gender,
+		person.region,
+		person.marketing_flag,
+		person.device_attributes[0].device_attribute[0].value,
+		person.device_attributes[0].device_attribute[1].value,
+		person.device_attributes[0].device_attribute[2].value,
+		person.device_attributes[0].device_attribute[3].value,
+		person.device_attributes[0].device_attribute[4].value,
+		person.off_device_flag);
 
-    const xml = xmlbuilder.create({person: {
-        pid: 1
-    }}).end({pretty : true, allowEmpty : true})
-
-    res.send(xml);
+	if (pid == false) {
+		logger.error("[people]: Failed to create user!");
+		res.status(500).send(utils.generateServerError());
+	}
+	res.status(200).send(xmlbuilder.create({person: {
+		pid: pid
+	}}).end({pretty: true, allowEmpty: true}));
 })
 
 /* 
@@ -49,12 +80,12 @@ route.get("/@me/profile", (req, res) => {
 	let data = path.resolve(__dirname, "test");
 	const profile_xml = path.join(data, `profile.xml`);
 	res.setHeader("Content-Type", "application/xml");
-    if (fs.existsSync(profile_xml)) {
-        res.sendFile(profile_xml);
-    } else {
-        logger.error(`[content]: File ${profile_xml} for test data cannot be found.`);
-        res.status(404).send(utils.generateNotFound());
-    }
+	if (fs.existsSync(profile_xml)) {
+		res.sendFile(profile_xml);
+	} else {
+		logger.error(`[content]: File ${profile_xml} for test data cannot be found.`);
+		res.status(404).send(utils.generateNotFound());
+	}
 })
 
 /* 
@@ -67,17 +98,17 @@ route.post("/@me/deletion", (req, res) => {
 })
 
 /*
-    This is a test path.
-    Content-Type: XML
+	This is a test path.
+	Content-Type: XML
 */
 route.get("/test", (req, res) => {
-    res.setHeader("Content-Type", "application/xml")
-    res.send(nn_error.createError(1230, "URGAY"));
+	res.setHeader("Content-Type", "application/xml")
+	res.send(nn_error.createError(1230, "URGAY"));
 })
 
 /*
-    This is the API path the Wii U/3DS calls to when asking if a Network ID is already taken.
-    Content-Type: XML
+	This is the API path the Wii U/3DS calls to when asking if a Network ID is already taken.
+	Content-Type: XML
 
 	If the NNID is already in use, you should send a 401.
 	If the NNID is available, send a 200.
@@ -89,19 +120,19 @@ route.get("/:network_id", (req, res) => {
 		return;
 	}
 	knex.select('id')
-        .from('people')
-        .where('user_id', req.params.network_id)
+		.from('people')
+		.where('user_id', req.params.network_id)
 		.then(rows => {
-            if (rows.length != 0) {
+			if (rows.length != 0) {
 				res.status(401).send(nn_error.createError("0100", "Account ID already exists"));
-            } else {
+			} else {
 				res.status(200).send(req.params.network_id);
 			}
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send(utils.generateServerError());
-        })
+		})
+		.catch(err => {
+			console.error(err);
+			res.status(500).send(utils.generateServerError());
+		})
 })
 
 module.exports = route;

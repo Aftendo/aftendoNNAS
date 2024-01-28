@@ -13,6 +13,11 @@ route.use((req, res, next) => {
     auth.checkAuth(req, res, next);
 });
 
+/*
+    This is the api path the Wii U (still, idk abt 3ds) calls to when getting the EULA.
+    Content-Type: XML
+*/
+
 route.get("/agreements/Nintendo-Network-EULA/:region/@latest", (req, res) => {
     const region = req.params['region']; // TODO: create other region specific agreements
     let agreements = path.resolve(__dirname, "agreements");
@@ -25,6 +30,11 @@ route.get("/agreements/Nintendo-Network-EULA/:region/@latest", (req, res) => {
         res.status(404).send(utils.generateNotFound());
     }
 });
+
+/*
+    This is the api path the Wii U (idk abt 3ds) calls to when getting time zones.
+    Content-Type: XML
+*/
 
 route.get("/time_zones/:region/:lang", (req, res) => {
     const region = req.params['region'];

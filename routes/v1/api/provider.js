@@ -2,9 +2,11 @@ const express = require('express');
 const logger = require('logger');
 const auth = require('auth');
 const nn_error = require('nn_error');
-const route = express.Router();
+const utils = require('utils');
 
-const xmlbuilder = require("xmlbuilder")
+const xmlbuilder = require("xmlbuilder");
+
+const route = express.Router();
 
 route.use((req, res, next) => {
     auth.checkAuth(req, res, next);
@@ -15,7 +17,7 @@ route.get("/service_token/@me", (req, res) => {
 
     res.send(xmlbuilder.create({
         service_token : {
-            token : "This_Is_A_Token_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!"
+            token : utils.generateServiceToken()
         }
     }).end({pretty : true, allowEmpty : true}))
 })

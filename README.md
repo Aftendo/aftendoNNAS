@@ -12,9 +12,5 @@ Yeah. Just make sure it's open source, and disclose your changes. (Basically for
 # I see code from Pretendo. (not yet as of right now)
 Yes, I know. It's why our license for our code matches the same one from Pretendo's account server.
 
-We utilize some utilities that are in the https://github.com/PretendoNetwork/account repository, such as
-- Verifying console certificates
-- Some code to encrypt ServiceTokens
-- More will be added as we use more
-
+I used to detail what we took but that was time consuming and jon said the git history would do what we needed anyway...
 
