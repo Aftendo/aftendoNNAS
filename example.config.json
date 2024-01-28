@@ -14,5 +14,10 @@
         "user": "altnnas",
         "pass": "altnnas",
         "name": "altnnas-db"
+    },
+
+    "encryption_keys": {
+        "_comment": "First value is the AES-256 key, second is the AES-256 IV",
+        "service_token": [ "aes256encryptionkey", "aes256encryptioniv" ]
     }
 }

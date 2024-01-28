@@ -1,7 +1,9 @@
 require("./aliases")();
 const express = require("express");
 const config = require("./config.json");
-const logger = require("./lib/logger.js")
+const logger = require("logger")
+const knex = require("db");
+const utils = require("utils");
 const app = express();
 
 const path = require("path");
@@ -9,27 +11,27 @@ const path = require("path");
 const routes = require("./routes/index.js");
 
 const bodyParser = require('body-parser');
+const nn_error = require("nn_error");
 require('body-parser-xml')(bodyParser);
+
+
+function logHeaders(req, res, next) {
+  const _setHeader = res.setHeader;
+  res.setHeader = function(name, value) {
+      console.log(`Header set: ${name}: ${value}`);
+      _setHeader.call(this, name, value);
+  };
+  next();
+}
 
 logger.log("[main]: Connecting to DB...");
 //Database
-const knex = require('knex')({
-  client: 'mysql',
-  connection: {
-    host: config.db.host,
-    port: config.db.port,
-    user: config.db.user,
-    password: config.db.pass,
-    database: config.db.name
-  }
-});
-
 try {
   knex.raw('select 1+1 as result').then(function () {
     logger.log("[main]: Connected!");
   });
 } catch(e) {
-  throw "Failed to connect to database.";
+  throw `Failed to connect to database.\n${e}`;
 }
 
 //Log all incoming HTTP requests
@@ -38,8 +40,14 @@ app.use((req, res, next) => {
   next();
 });
 
+if(config.env.debug){
+  app.use(logHeaders);
+}
+
 //Turns all XML request data into a readable JSON file
 app.use(bodyParser.xml())
+
+app.use(bodyParser.urlencoded({ extended: false }));
 
 logger.log("[main]: Creating static directories.")
 app.use(express.static(path.join(__dirname, "/static_index")));
@@ -52,10 +60,14 @@ for (const route of routes) {
 }
 
 app.use("/*", (req, res) => {
-  logger.warn(`Unknown route!`);
-  res.status(404).send("404");
+  if(config.env.debug){
+    logger.warn(`Unknown route!`);
+  }
+  res.setHeader("Content-Type", "application/xml");
+  res.status(404).send(utils.generateNotFound());
 })
 
-app.listen(config.http.port, () => {
-  logger.log(`[main]: altnnas listening on ${config.http.port}`);
+app.listen(config.http.port, async () => {
+  logger.log(`[main]: AltNNAS listening on ${config.http.port}`);
+  console.log(await utils.generateServiceToken());
 })

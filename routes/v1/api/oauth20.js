@@ -6,7 +6,30 @@ const route = express.Router();
 
 const xmlbuilder = require("xmlbuilder")
 
+route.use((req, res, next) => {
+    auth.checkAuth(req, res, next);
+});
+
+/*
+    Generates an access token for NEX? Not sure what this really is for.
+    Handles logging in though.
+    Content-Type: XML
+
+    For invalid password, return nn_error.createError("0106", "Invalid account ID or password"); with a 400 status
+    Sends post data
+    grant_type (seen as "password" atm)
+    user_id (username)
+    password (sha1 hash?)
+*/
 route.post("/access_token/generate", (req, res) => {
+    /*
+    <errors> 
+	    <error> 
+		    <code>0112</code> 
+		    <message>Account is deleted</message> 
+	    </error> 
+    </errors>
+    */
     res.send(xmlbuilder.create({OAuth20 : {
         access_token : {
             token : "Hello_World",
