@@ -20,7 +20,21 @@ route.get("/agreements/Nintendo-Network-EULA/:region/@latest", (req, res) => {
     if (fs.existsSync(agreementRegion)) {
         res.sendFile(agreementRegion);
     } else {
-        logger.error(`[content]: File ${agreementRegion} cannot be found.`);
+        logger.error(`[content]: File ${agreementRegion} for regional agreements cannot be found.`);
+        res.status(404).send(nn_error.createError("0008", "Not found"));
+    }
+});
+
+route.get("/time_zones/:region/:lang", (req, res) => {
+    const region = req.params['region'];
+    const lang = req.params['lang'];
+    let time_zones = path.resolve(__dirname, "time_zones");
+    const timezoneList = path.join(time_zones, region, `${lang}.xml`);
+    res.setHeader("Content-Type", "application/xml");
+    if (fs.existsSync(timezoneList)) {
+        res.sendFile(timezoneList);
+    } else {
+        logger.error(`[content]: File ${tz_thingy} for timezones cannot be found.`);
         res.status(404).send(nn_error.createError("0008", "Not found"));
     }
 });

@@ -28,6 +28,8 @@ route.post("/", (req, res) => {
     res.send(xml);
 })
 
+/* deletion roue
+
 /*
     This is a test path.
     Content-Type: XML

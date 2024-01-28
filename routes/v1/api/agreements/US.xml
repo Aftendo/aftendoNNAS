@@ -1,3 +1,13 @@
 <agreements><agreement><country>US</country><language>en</language><language_name>English</language_name><publish_date>2014-09-29T20:07:35</publish_date><texts xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="chunkedStoredAgreementText"><agree_text><![CDATA[I Accept]]></agree_text><main_title><![CDATA[AltNNAS Network Services Agreement]]></main_title><non_agree_text><![CDATA[I Decline]]></non_agree_text><main_text index="1"><![CDATA[Network Services Agreement
-Sex.
+Thank you for choosing AltNNAS!
+
+As of right now, we do not have a definitive network agreement. However, we do have some rules in place:
+
+- Do not cheat in online lobbies/matches. This is a bannable offense.
+- Do not harass, slander, or bully other users on the service.
+- Do not take blind stabs at the code. It's available at https://github.com/TermOfficial/altnnas.
+- If you do find a security vulnerability, please disclose of it privately to me at @terminal10.
+- If you are not authorized to use this developer instance of AltNNAS, please stop using it immediately.
+
+If you agree to these terms, press I agree.
 ]]></main_text></texts><type>NINTENDO-NETWORK-EULA</type><version>0301</version></agreement></agreements>

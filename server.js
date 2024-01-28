@@ -14,6 +14,7 @@ const bodyParser = require('body-parser');
 const nn_error = require("nn_error");
 require('body-parser-xml')(bodyParser);
 
+
 function logHeaders(req, res, next) {
   const _setHeader = res.setHeader;
   res.setHeader = function(name, value) {
@@ -27,7 +28,7 @@ logger.log("[main]: Connecting to DB...");
 //Database
 try {
   knex.raw('select 1+1 as result').then(function () {
-    logger.log("[main]: connected!");
+    logger.log("[main]: Connected!");
   });
 } catch(e) {
   throw `Failed to connect to database.\n${e}`;
@@ -45,6 +46,8 @@ if(config.env.debug){
 
 //Turns all XML request data into a readable JSON file
 app.use(bodyParser.xml())
+
+app.use(bodyParser.urlencoded({ extended: false }));
 
 logger.log("[main]: Creating static directories.")
 app.use(express.static(path.join(__dirname, "/static_index")));
@@ -65,5 +68,5 @@ app.use("/*", (req, res) => {
 })
 
 app.listen(config.http.port, () => {
-  logger.log(`[main]: altnnas listening on ${config.http.port}`);
+  logger.log(`[main]: AltNNAS listening on ${config.http.port}`);
 })
