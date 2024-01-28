@@ -27,19 +27,32 @@ route.post("/", (req, res) => {
 
 	logger.log(`[/v1/api/people] Account creation`);
 
-	if (!auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])) {
+	let consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
+	if (!consoleData) {
 		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
-			logger.error(`[people]: Failed to create console data!\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
+			logger.error(`[people]: Failed to create console data!\n
+			device id: ${headers['x-nintendo-device-id']}\n
+			serial: ${headers['x-nintendo-serial-number']}`);
+
 			res.status(500).send(utils.generateServerError());
 			return;
 		} else {
-			logger.log(`[people]: Added new console data\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
+			consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
+			if(!consoleData){
+				logger.error(`[people]: Console data was created by createConsoleData, but cannot seem to be fetched by the DB!\n
+				device id: ${headers['x-nintendo-device-id']}\n
+				serial: ${headers['x-nintendo-serial-number']}`);
+			} else {
+				logger.log(`[people]: Added new console data!\n
+				device id: ${headers['x-nintendo-device-id']}\n
+				serial: ${headers['x-nintendo-serial-number']}`);
+			}
 		}
 	}
 	
 	const pid = anid.createUser(
-		headers['x-nintendo-platform-id'],
-		headers['x-nintendo-device-id'],
+		consoleData.platformId,
+		consoleData.deviceId,
 		person.birth_date,
 		person.user_id,
 		person.password,
