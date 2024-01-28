@@ -2,6 +2,9 @@ const express = require('express');
 const logger = require('logger');
 const knex = require('db');
 const auth = require('auth');
+const path = require("path");
+const utils = require("utils");
+const fs = require("fs");
 const nn_error = require('nn_error');
 const route = express.Router();
 
@@ -21,6 +24,13 @@ route.post("/", (req, res) => {
 
     logger.log(`[/v1/api/people] Account creation`);
 
+	if (!auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])) {
+		if(!auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['x-nintendo-region'], headers['x-nintendo-country'])){
+			logger.error(`[people]: Failed to create console data!\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
+			
+		}
+	}
+
     const xml = xmlbuilder.create({person: {
         pid: 1
     }}).end({pretty : true, allowEmpty : true})
@@ -28,7 +38,33 @@ route.post("/", (req, res) => {
     res.send(xml);
 })
 
-/* deletion roue
+/* 
+	This is the api path the Wii U/3DS calls to when getting account info (???).
+	Content-Type: XML
+*/
+route.get("/@me/profile", (req, res) => {
+	// TODO: Get information from DB (requires account to be made and inserted into db first)
+	// DUMMY DATA BELOW
+	res.setHeader("Content-Type", "application/xml");
+	let data = path.resolve(__dirname, "test");
+	const profile_xml = path.join(data, `profile.xml`);
+	res.setHeader("Content-Type", "application/xml");
+    if (fs.existsSync(profile_xml)) {
+        res.sendFile(profile_xml);
+    } else {
+        logger.error(`[content]: File ${profile_xml} for test data cannot be found.`);
+        res.status(404).send(utils.generateNotFound());
+    }
+})
+
+/* 
+	This is the api path the Wii U/3DS calls to when deleting an account from the server.
+	Content-Type: XML
+*/
+route.post("/@me/deletion", (req, res) => {
+	res.setHeader("Content-Type", "application/xml");
+	res.status(200);
+})
 
 /*
     This is a test path.
@@ -48,7 +84,7 @@ route.get("/test", (req, res) => {
 	You don't need to send any data with the request.(?)
 */
 route.get("/:network_id", (req, res) => {
-	if(req.params.network_id.length < 6 || req.params.network_id.length > 16){
+	if (req.params.network_id.length < 6 || req.params.network_id.length > 16) {
 		res.status(403).send(nn_error.createError("1104", "User ID format is not valid"));
 		return;
 	}
@@ -64,7 +100,7 @@ route.get("/:network_id", (req, res) => {
         })
         .catch(err => {
             console.error(err);
-            res.status(500).send(nn_error.createError("2001", "Internal server error"));
+            res.status(500).send(utils.generateServerError());
         })
 })
 

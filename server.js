@@ -64,7 +64,7 @@ app.use("/*", (req, res) => {
     logger.warn(`Unknown route!`);
   }
   res.setHeader("Content-Type", "application/xml");
-  res.status(404).send(nn_error.createError("0008", "Not found"));
+  res.status(404).send(utils.generateNotFound());
 })
 
 app.listen(config.http.port, () => {
