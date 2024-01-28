@@ -22,6 +22,14 @@ route.use((req, res, next) => {
     password (sha1 hash?)
 */
 route.post("/access_token/generate", (req, res) => {
+    /*
+    <errors> 
+	    <error> 
+		    <code>0112</code> 
+		    <message>Account is deleted</message> 
+	    </error> 
+    </errors>
+    */
     res.send(xmlbuilder.create({OAuth20 : {
         access_token : {
             token : "Hello_World",
