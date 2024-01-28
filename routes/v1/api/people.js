@@ -93,18 +93,7 @@ route.post("/", (req, res) => {
 	Content-Type: XML
 */
 route.get("/@me/profile", (req, res) => {
-	// TODO: Get information from DB (requires account to be made and inserted into db first)
-	// DUMMY DATA BELOW
-	res.setHeader("Content-Type", "application/xml");
-	let data = path.resolve(__dirname, "test");
-	const profile_xml = path.join(data, `profile.xml`);
-	res.setHeader("Content-Type", "application/xml");
-	if (fs.existsSync(profile_xml)) {
-		res.sendFile(profile_xml);
-	} else {
-		logger.error(`[content]: File ${profile_xml} for test data cannot be found.`);
-		res.status(404).send(utils.generateNotFound());
-	}
+	
 })
 
 /* 
@@ -114,15 +103,6 @@ route.get("/@me/profile", (req, res) => {
 route.post("/@me/deletion", (req, res) => {
 	res.setHeader("Content-Type", "application/xml");
 	res.status(200);
-})
-
-/*
-	This is a test path.
-	Content-Type: XML
-*/
-route.get("/test", (req, res) => {
-	res.setHeader("Content-Type", "application/xml")
-	res.send(nn_error.createError(1230, "URGAY"));
 })
 
 /*

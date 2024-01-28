@@ -3,7 +3,8 @@ const logger = require('logger');
 const auth = require('auth');
 const knex = require('db');
 const nn_error = require('nn_error');
-const moment = require ('moment')
+const moment = require('moment')
+const utils = require("utils");
 
 const route = express.Router();
 
@@ -27,7 +28,7 @@ route.use((req, res, next) => {
 */
 route.post("/access_token/generate", (req, res) => {
     const { grant_type, user_id, password } = req.body;
-    if(grant_type != "password" && grant_type != "refresh_token"){
+    if (grant_type != "password" && grant_type != "refresh_token") {
         res.status(400).send(nn_error.createError("0004", "Invalid grant type"));
         return;
     }
@@ -41,30 +42,35 @@ route.post("/access_token/generate", (req, res) => {
                 res.status(400).send(nn_error.createError("0112", "Account is deleted"));
                 return;
             } else {
-                if (rows[0].password != req) {
-                    res.status(400).send(nn_error.createError("0106", "Invalid account ID or password"));
-                    return;
-                } else {
+                if (rows[0].password == password) {
                     const token = crypto.randomBytes(15).toString('hex');
                     knex("access_tokens").insert({
                         pid: rows[0].id,
                         token: token,
-                        expires: moment().add(1, 'hour')
+                        expires: moment().add(1, 'hour').format("YYYY-MM-DD HH:mm:ss")
                     })
                         .then(function () {
-                            res.send(xmlbuilder.create({OAuth20: {
-                                access_token: {
-                                    token: token,
-                                    refresh_token: "Test",
-                                    expires_in: 3600
+                            res.send(xmlbuilder.create({
+                                OAuth20: {
+                                    access_token: {
+                                        token: token,
+                                        refresh_token: "Test",
+                                        expires_in: 3600
+                                    }
                                 }
-                            }}).end({pretty: true, allowEmpty: true}))
+                            }).end({ pretty: true, allowEmpty: true }))
                         })
                         .catch(err => {
                             console.log(err);
                             res.status(500).send(utils.generateServerError());
                             return;
                         })
+                } else {
+                    logger.error(`[oauth20]: User ${user_id} tried to login with an invalid password\n
+                    hash in db: ${rows[0].password}\n
+                    hash given: ${password}`);
+                    res.status(400).send(nn_error.createError("0106", "Invalid account ID or password"));
+                    return;
                 }
             }
         })
