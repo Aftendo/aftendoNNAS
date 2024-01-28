@@ -1,5 +1,5 @@
 # altnnas
-yes, this is a take on arian's "altnnas" server (nintendo network account server?)
+yes, this is a take on arian's "altnnas" server (nintendo network authentication server?)
 # Why?
 for the benefit of rverse and Aquamarine, mostly.
 Nex servers will probably be placed under altNEX-S or something.
