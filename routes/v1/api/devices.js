@@ -18,6 +18,7 @@ route.get("/@current/status", (req, res) => {
 })
 /*
 It seems the above URL just shows which devices are connected to your NNID
+TODO: Get what it looks like when 3ds is linked
 <devices>
 	<device>
 		<device_id>STRIPPED</device_id>

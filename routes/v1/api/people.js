@@ -28,7 +28,7 @@ route.post("/", (req, res) => {
 	logger.log(`[/v1/api/people] Account creation`);
 
 	if (!auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])) {
-		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country']) == false) {
+		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
 			logger.error(`[people]: Failed to create console data!\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
 			res.status(500).send(utils.generateServerError());
 			return;
@@ -63,6 +63,7 @@ route.post("/", (req, res) => {
 	if (pid == false) {
 		logger.error("[people]: Failed to create user!");
 		res.status(500).send(utils.generateServerError());
+		return;
 	}
 	res.status(200).send(xmlbuilder.create({person: {
 		pid: pid
