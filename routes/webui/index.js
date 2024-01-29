@@ -6,7 +6,6 @@ var validator = require("email-validator");
 const route = express.Router();
 
 route.get("/", (req, res) => {
-    logger.log(`[webui]: Index`);
     res.send("AltNNAS WebUI");
 })
 
