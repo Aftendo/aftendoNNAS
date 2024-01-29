@@ -61,6 +61,12 @@ for (const route of routes) {
   app.use(route.path, route.route)
 }
 
+app.use("/", (req, res) => {
+  res.setHeader("Location", "/webui");
+  res.sendStatus(302);
+  // I AM SUCH A REBEL. (I didn't use res.redirect())
+});
+
 app.use("/*", (req, res) => {
   if(config.env.debug){
     logger.warn(`Unknown route!`);
