@@ -10,4 +10,8 @@ route.get("/", (req, res) => {
     res.send("AltNNAS WebUI");
 })
 
+route.all("/*", (req, res) => {
+    res.status(404).send("Not found");
+});
+
 module.exports = route
