@@ -1,7 +1,8 @@
 {
     "env": {
         "_comment": "Never run the server in production with debug!",
-        "debug": true
+        "debug": true,
+        "logLevel": 1
     },
 
     "http": {

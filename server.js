@@ -35,13 +35,15 @@ try {
 }
 
 //Log all incoming HTTP requests
-app.use((req, res, next) => {
-  logger.http_log(req);
-  next();
-});
+if(config.env.logLevel > 0){
+  app.use((req, res, next) => {
+    logger.http_log(req);
+    next();
+  });
+}
 
-if(config.env.debug){
-  //app.use(logHeaders);
+if(config.env.debug && config.env.logLevel > 1){
+  app.use(logHeaders);
 }
 
 //Turns all XML request data into a readable JSON file
