@@ -21,14 +21,14 @@ route.use((req, res, next) => {
 	auth.checkAuth(req, res, next);
 });
 
-route.post("/", (req, res) => {
+route.post("/", async (req, res) => {
 	const person = req.body.person;
 	const headers = req.headers;
 	res.setHeader("Content-Type", "application/xml");
 
 	logger.log(`[/v1/api/people] Account creation`);
 	try {
-		var consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
+		var consoleData = await auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
 		if (!consoleData) {
 			if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
 				logger.error(`[people]: Failed to create console data!\n
@@ -38,7 +38,7 @@ route.post("/", (req, res) => {
 				res.status(500).send(utils.generateServerError());
 				return;
 			} else {
-				consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
+				consoleData = await auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
 				if (!consoleData) {
 					logger.error(`[people]: Console data was created by createConsoleData, but cannot seem to be fetched by the DB!\n
 				device id: ${headers['x-nintendo-device-id']}\n

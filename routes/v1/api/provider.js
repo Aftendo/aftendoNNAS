@@ -12,12 +12,12 @@ route.use((req, res, next) => {
     auth.checkAuth(req, res, next);
 });
 
-route.get("/service_token/@me", (req, res) => {
+route.get("/service_token/@me", async (req, res) => {
     const client_id = req.query['client_id'];
 
     res.send(xmlbuilder.create({
         service_token : {
-            token : utils.generateServiceToken()
+            token : await utils.generateServiceToken(req.me, req.headers["x-nintendo-platform-id"])
         }
     }).end({pretty : true, allowEmpty : true}))
 })
