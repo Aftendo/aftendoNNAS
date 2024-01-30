@@ -42,11 +42,13 @@ route.post("/access_token/generate", (req, res) => {
                 res.status(400).send(nn_error.createError("0112", "Account is deleted"));
                 return;
             } else {
-                if (rows[0].password == password) {
+                var result = utils.verifyPassword(password, rows[0].password);
+                if (result) {
                     const token = crypto.randomBytes(15).toString('hex');
                     knex("access_tokens").insert({
                         pid: rows[0].id,
                         token: token,
+                        deviceId: req.headers['x-nintendo-device-id'],
                         expires: moment().add(1, 'hour').format("YYYY-MM-DD HH:mm:ss")
                     })
                         .then(function () {
@@ -69,6 +71,7 @@ route.post("/access_token/generate", (req, res) => {
                     logger.error(`[oauth20]: User ${user_id} tried to login with an invalid password\n
                     hash in db: ${rows[0].password}\n
                     hash given: ${password}`);
+                    console.log(result);
                     res.status(400).send(nn_error.createError("0106", "Invalid account ID or password"));
                     return;
                 }

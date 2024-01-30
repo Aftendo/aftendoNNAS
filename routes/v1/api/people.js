@@ -9,7 +9,8 @@ const nn_error = require('nn_error');
 const route = express.Router();
 
 const xmlbuilder = require("xmlbuilder");
-const anid = require('../../../lib/anid');
+const anid = require('anid');
+const { getUserDataByToken } = require('../../../lib/anid');
 
 /*
 	This is the api path the Wii U/3DS calls to when creating a new user.
@@ -27,62 +28,64 @@ route.post("/", (req, res) => {
 
 	logger.log(`[/v1/api/people] Account creation`);
 	try {
-	var consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
-	if (!consoleData) {
-		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
-			logger.error(`[people]: Failed to create console data!\n
+		var consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
+		if (!consoleData) {
+			if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
+				logger.error(`[people]: Failed to create console data!\n
 			device id: ${headers['x-nintendo-device-id']}\n
 			serial: ${headers['x-nintendo-serial-number']}`);
 
-			res.status(500).send(utils.generateServerError());
-			return;
-		} else {
-			consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
-			if(!consoleData){
-				logger.error(`[people]: Console data was created by createConsoleData, but cannot seem to be fetched by the DB!\n
-				device id: ${headers['x-nintendo-device-id']}\n
-				serial: ${headers['x-nintendo-serial-number']}`);
+				res.status(500).send(utils.generateServerError());
+				return;
 			} else {
-				logger.log(`[people]: Added new console data!\n
+				consoleData = auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
+				if (!consoleData) {
+					logger.error(`[people]: Console data was created by createConsoleData, but cannot seem to be fetched by the DB!\n
 				device id: ${headers['x-nintendo-device-id']}\n
 				serial: ${headers['x-nintendo-serial-number']}`);
+				} else {
+					logger.log(`[people]: Added new console data!\n
+				device id: ${headers['x-nintendo-device-id']}\n
+				serial: ${headers['x-nintendo-serial-number']}`);
+				}
 			}
 		}
-	}
-	
-	const pid = anid.createUser(
-		consoleData.platformId,
-		consoleData.deviceId,
-		person.birth_date,
-		person.user_id,
-		person.password,
-		person.country,
-		person.language,
-		person.tz_name,
-		person.agreement,
-		person.email,
-		person.mii,
-		person.parental_consent,
-		person.gender,
-		person.region,
-		person.marketing_flag,
-		person.device_attributes[0].device_attribute[0].value,
-		person.device_attributes[0].device_attribute[1].value,
-		person.device_attributes[0].device_attribute[2].value,
-		person.device_attributes[0].device_attribute[3].value,
-		person.device_attributes[0].device_attribute[4].value,
-		person.off_device_flag);
 
-	if (pid == false) {
-		logger.error("[people]: Failed to create user!");
-		res.setHeader("Content-Type", "application/xml");
-		res.status(500).send(utils.generateServerError());
-		return;
-	}
-	res.status(200).send(xmlbuilder.create({person: {
-		pid: pid
-	}}).end({pretty: true, allowEmpty: true}));
-	} catch(e) {
+		const pid = anid.createUser(
+			consoleData.platformId,
+			consoleData.deviceId,
+			person.birth_date,
+			person.user_id,
+			person.password,
+			person.country,
+			person.language,
+			person.tz_name,
+			person.agreement,
+			person.email,
+			person.mii,
+			person.parental_consent,
+			person.gender,
+			person.region,
+			person.marketing_flag,
+			person.device_attributes[0].device_attribute[0].value,
+			person.device_attributes[0].device_attribute[1].value,
+			person.device_attributes[0].device_attribute[2].value,
+			person.device_attributes[0].device_attribute[3].value,
+			person.device_attributes[0].device_attribute[4].value,
+			person.off_device_flag);
+
+		if (pid == false) {
+			logger.error("[people]: Failed to create user!");
+			res.setHeader("Content-Type", "application/xml");
+			res.status(500).send(utils.generateServerError());
+			return;
+		}
+		res.status(200).send(xmlbuilder.create({
+			person: {
+				pid: pid
+			}
+		}).end({ pretty: true, allowEmpty: true }));
+	} catch (e) {
 		res.setHeader("Content-Type", "application/xml");
 		res.status(500).send(utils.generateServerError());
 	}
@@ -93,8 +96,53 @@ route.post("/", (req, res) => {
 	Content-Type: XML
 */
 route.get("/@me/profile", (req, res) => {
-	
+	const token = req.headers['authorization'].toString();
+	const me = getUserDataByToken(token);
+	if (me == false) {
+		res.status(400).send(nn_error.createError("2641", "Token is expired"));
+		return;
+	}
+	res.status(200).send(xmlbuilder.create({
+		person: {
+			pid: pid
+		}
+	}).end({ pretty: true, allowEmpty: true }));
 })
+
+route.put("/@me/miis/@primary", (req, res) => {
+	const token = req.headers['authorization'].toString();
+	const me = getUserDataByToken(token);
+	if (me == false) {
+		res.status(400).send(nn_error.createError("2641", "Token is expired"));
+		return;
+	}
+	const mii = req.body.mii;
+	knex("mii")
+		.where('pid', me.id)
+		.update({
+			name: mii.name,
+			data: mii.data,
+			primary_mii: mii.primary
+		})
+		.then(function () {
+			knex("people")
+				.where('id', me.id)
+				.update({
+					updated_at: knex.fn.now()
+				})
+				.then(function () {
+					res.sendStatus(200);
+				})
+				.catch(err => {
+					logger.error(`[people]: Failed to update updated_at time for ${me.user_id}! Will return success anyway.`);
+					res.sendStatus(200);
+				})
+		})
+		.catch(err => {
+			logger.error(`[people]: Failed to update Mii for ${me.user_id}`);
+			res.status(500).send(utils.generateServerError());
+		});
+});
 
 /* 
 	This is the api path the Wii U/3DS calls to when deleting an account from the server.
@@ -108,7 +156,7 @@ route.post("/@me/deletion", (req, res) => {
 /*
 	This is the API path the Wii U/3DS calls to when asking if a Network ID is already taken.
 	Content-Type: XML
-
+	
 	If the NNID is already in use, you should send a 401.
 	If the NNID is available, send a 200.
 	You don't need to send any data with the request.(?)
