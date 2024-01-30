@@ -5,11 +5,11 @@ const nn_error = require('nn_error');
 var validator = require("email-validator");
 const route = express.Router();
 
-route.get("/", (req, res) => {
+route.get("/", (res) => {
     res.send("AltNNAS WebUI");
 })
 
-route.all("/*", (req, res) => {
+route.all("/*", (res) => {
     res.status(404).send("Not found");
 });
 

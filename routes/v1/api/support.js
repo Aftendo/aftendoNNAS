@@ -22,6 +22,15 @@ route.post("/validate/email", (req, res) => {
     }
 })
 
+route.get("/resend_confirmation/", (req, res) => {
+    res.send(xmlbuilder.create({email:{}}).end({pretty: false, allowEmpty: false}));
+})
+
+route.put("/email_confirmation/:pid/:code", (req, res) => { // pid?
+    // nn_error.createError("0116", "Missing or invalid confirmation code");
+    res.send(xmlbuilder.create({email:{}}).end({pretty: false, allowEmpty: false}));
+})
+
 // Parental controls routes
 route.get("/send_confirmation/pin/:email", (req, res) => {
     // Do this later? We need a mailer for this. TurboSMTP might be good. Who knows!
