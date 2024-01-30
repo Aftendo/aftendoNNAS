@@ -95,7 +95,7 @@ route.post("/", (req, res) => {
 	This is the api path the Wii U/3DS calls to when getting account info (???).
 	Content-Type: XML
 */
-route.get("/@me/profile", (req, res) => {
+route.get(["/@me/profile", "/@me/devices/"], (req, res) => {
 	const token = req.headers['authorization'].toString();
 	const me = getUserDataByToken(token);
 	if (me == false) {
@@ -104,7 +104,73 @@ route.get("/@me/profile", (req, res) => {
 	}
 	res.status(200).send(xmlbuilder.create({
 		person: {
-			pid: pid
+			active_flag: "Y",
+			birth_date: me.birth_date,
+			country: me.country,
+			create_date: me.created_on,
+			device_attributes: {
+				device_attribute: {
+					created_date: me.created_on,
+					name: "persistent_id",
+					value: me.persistent_id
+				},
+				device_attribute: {
+					created_date: me.created_on,
+					name: "transferable_id_base",
+					value: me.transferable_id_base
+				},
+				device_attribute: {
+					created_date: me.created_on,
+					name: "transferable_id_base_common",
+					value: me.transferable_id_base_common
+				},
+				device_attribute: {
+					created_date: me.created_on,
+					name: "uuid_account",
+					value: me.uuid_account
+				},
+				device_attribute: {
+					created_date: me.created_on,
+					name: "uuid_common",
+					value: me.uuid_common
+				}
+			},
+			gender: me.gender,
+			language: me.language,
+			updated: me.updated_at,
+			marketing_flag: me.marketing_flag,
+			off_device_flag: me.off_device_flag,
+			pid: me.id,
+			email: {
+				address: me.email.email,
+				id: me.email.id,
+				parent: "N",
+				primary: "Y",
+				reachable: me.email.reachable,
+				type: me.email.type,
+				updated_by: me.email.updated_by,
+				validated: me.email.validated
+			},
+			mii: {
+				status: me.mii.status,
+				data: me.mii.data,
+				id: me.mii.id,
+				mii_hash: me.mii.hash,
+				mii_images: {
+					mii_image: {
+						cached_url: "https://mii-secure.account.nintendo.net/1620d01kdfnr1_standard.tga",
+						id: me.mii.id,
+						url: "https://mii-secure.account.nintendo.net/1620d01kdfnr1_standard.tga",
+						type: "standard"
+					}
+				},
+				name: me.mii.name,
+				primary: me.mii.primary_mii
+			},
+			region: me.region,
+			tz_name: me.tz_name,
+			user_id: me.user_id,
+			utc_offset: me.utc_offset
 		}
 	}).end({ pretty: true, allowEmpty: true }));
 })
