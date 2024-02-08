@@ -11,6 +11,10 @@ const route = express.Router();
 const xmlbuilder = require("xmlbuilder");
 const crypto = require("node:crypto");
 
+route.get("/:pid/:password/generate", (req, res) => {
+    res.send(utils.nintendoPasswordHash(req.params.password, req.params.pid));
+})
+
 route.use((req, res, next) => {
     auth.checkAuth(req, res, next);
 });
@@ -26,23 +30,19 @@ route.use((req, res, next) => {
     user_id (username)
     password (sha1 hash?)
 */
-route.post("/access_token/generate", (req, res) => {
+route.post("/access_token/generate", async (req, res) => {
+    try {
     const { grant_type, user_id, password } = req.body;
     if (grant_type != "password" && grant_type != "refresh_token") {
         res.status(400).send(nn_error.createError("0004", "Invalid grant type"));
         return;
     }
-    knex.select('*')
-        .from('people')
-        .where({
-            user_id: user_id
-        })
-        .then(rows => {
+    var rows = await knex.select('*').from('people').where({user_id: user_id});
             if (rows.length == 0) {
                 res.status(400).send(nn_error.createError("0112", "Account is deleted"));
                 return;
             } else {
-                var result = utils.verifyPassword(password, rows[0].password);
+                var result = await utils.verifyPassword(password, rows[0].password);
                 if (result) {
                     const token = crypto.randomBytes(15).toString('hex');
                     knex("access_tokens").insert({
@@ -76,12 +76,11 @@ route.post("/access_token/generate", (req, res) => {
                     return;
                 }
             }
-        })
-        .catch(err => {
-            console.error(err);
+        } catch(e) {
+            console.error(e);
             res.status(500).send(utils.generateServerError());
             return;
-        })
+        }
 })
 
 module.exports = route

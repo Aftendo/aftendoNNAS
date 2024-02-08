@@ -46,6 +46,8 @@ if(config.env.debug && config.env.logLevel > 1){
   app.use(logHeaders);
 }
 
+//app.set('static buffer size', 1024);
+
 //Turns all XML request data into a readable JSON file
 app.use(bodyParser.xml())
 
@@ -61,7 +63,7 @@ for (const route of routes) {
   app.use(route.path, route.route)
 }
 
-app.use("/", (req, res) => {
+app.get("/", (req, res) => {
   res.setHeader("Location", "/webui");
   res.sendStatus(302);
   // I AM SUCH A REBEL. (I didn't use res.redirect())
