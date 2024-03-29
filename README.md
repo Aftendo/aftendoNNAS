@@ -1,3 +1,4 @@
+## will resume work soon LOOOOOL!
 # altnnas
 yes, this is a take on arian's "altnnas" server (nintendo network authentication server?)
 # Why?
