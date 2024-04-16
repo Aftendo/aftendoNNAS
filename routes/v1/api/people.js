@@ -9,7 +9,7 @@ const nn_error = require('nn_error');
 const route = express.Router();
 
 const xmlbuilder = require("xmlbuilder");
-const anid = require('../../../lib/anid');
+const anid = require('anid');
 
 /*
 	This is the api path the Wii U/3DS calls to when creating a new user.
@@ -20,73 +20,225 @@ route.use((req, res, next) => {
 	auth.checkAuth(req, res, next);
 });
 
-route.post("/", (req, res) => {
+route.post("/", async (req, res) => {
 	const person = req.body.person;
 	const headers = req.headers;
 	res.setHeader("Content-Type", "application/xml");
 
 	logger.log(`[/v1/api/people] Account creation`);
+	try {
+		var consoleData = await auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
+		if (!consoleData) {
+			if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
+				logger.error(`[people]: Failed to create console data!\n
+			device id: ${headers['x-nintendo-device-id']}\n
+			serial: ${headers['x-nintendo-serial-number']}`);
 
-	if (!auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])) {
-		if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country']) == false) {
-			logger.error(`[people]: Failed to create console data!\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
+				res.status(500).send(utils.generateServerError());
+				return;
+			} else {
+				consoleData = await auth.getConsoleDataBySerial(headers['x-nintendo-serial-number'])
+				if (!consoleData) {
+					logger.error(`[people]: Console data was created by createConsoleData, but cannot seem to be fetched by the DB!\n
+				device id: ${headers['x-nintendo-device-id']}\n
+				serial: ${headers['x-nintendo-serial-number']}`);
+				} else {
+					logger.log(`[people]: Added new console data!\n
+				device id: ${headers['x-nintendo-device-id']}\n
+				serial: ${headers['x-nintendo-serial-number']}`);
+				}
+			}
+		}
+
+		const pid = await anid.createUser(
+			consoleData.platformId,
+			consoleData.deviceId,
+			person.birth_date,
+			person.user_id,
+			person.password,
+			person.country,
+			person.language,
+			person.tz_name,
+			person.agreement,
+			person.email,
+			person.mii,
+			person.parental_consent,
+			person.gender,
+			person.region,
+			person.marketing_flag,
+			person.device_attributes[0].device_attribute[0].value,
+			person.device_attributes[0].device_attribute[1].value,
+			person.device_attributes[0].device_attribute[2].value,
+			person.device_attributes[0].device_attribute[3].value,
+			person.device_attributes[0].device_attribute[4].value,
+			person.off_device_flag);
+
+		if (pid == false) {
+			logger.error("[people]: Failed to create user!");
+			res.setHeader("Content-Type", "application/xml");
 			res.status(500).send(utils.generateServerError());
 			return;
-		} else {
-			logger.log(`[people]: Added new console data\ndevice id: ${headers['x-nintendo-device-id']}\nserial: ${headers['x-nintendo-serial-number']}`);
 		}
-	}
-	
-	const pid = anid.createUser(
-		headers['x-nintendo-platform-id'],
-		headers['x-nintendo-device-id'],
-		person.birth_date,
-		person.user_id,
-		person.password,
-		person.country,
-		person.language,
-		person.tz_name,
-		person.agreement,
-		person.email,
-		person.mii,
-		person.parental_consent,
-		person.gender,
-		person.region,
-		person.marketing_flag,
-		person.device_attributes[0].device_attribute[0].value,
-		person.device_attributes[0].device_attribute[1].value,
-		person.device_attributes[0].device_attribute[2].value,
-		person.device_attributes[0].device_attribute[3].value,
-		person.device_attributes[0].device_attribute[4].value,
-		person.off_device_flag);
-
-	if (pid == false) {
-		logger.error("[people]: Failed to create user!");
+		res.status(200).send(xmlbuilder.create({
+			person: {
+				pid: pid
+			}
+		}).end({ pretty: true, allowEmpty: true }));
+	} catch (e) {
+		res.setHeader("Content-Type", "application/xml");
 		res.status(500).send(utils.generateServerError());
 	}
-	res.status(200).send(xmlbuilder.create({person: {
-		pid: pid
-	}}).end({pretty: true, allowEmpty: true}));
 })
 
 /* 
 	This is the api path the Wii U/3DS calls to when getting account info (???).
 	Content-Type: XML
 */
-route.get("/@me/profile", (req, res) => {
-	// TODO: Get information from DB (requires account to be made and inserted into db first)
-	// DUMMY DATA BELOW
+
+route.get("/@me/profile", async (req, res) => {
+	var data = utils.makeUserData(req.me);
 	res.setHeader("Content-Type", "application/xml");
-	let data = path.resolve(__dirname, "test");
-	const profile_xml = path.join(data, `profile.xml`);
-	res.setHeader("Content-Type", "application/xml");
-	if (fs.existsSync(profile_xml)) {
-		res.sendFile(profile_xml);
+	res.setHeader("Content-Length", Buffer.byteLength(data));
+	res.status(200).send(data);
+})
+
+route.get("/@me/devices/owner", async (req, res) => {
+	let buffer = Buffer.from(req.headers["authorization"].toString().slice(6), "base64");
+	let decoded = buffer.toString("utf8").split(" ");
+	var user_id = decoded[0];
+	var email = req.headers["x-nintendo-email"];
+	const me = await anid.getUserDataByUserId(user_id);
+	if (me.deviceId_wup != "" && req.headers["x-nintendo-platform-id"] == 1 || me.deviceId_ctr && req.headers["x-nintendo-platform-id"] == 0) {
+		res.setHeader("Content-Type", "application/xml");
+		res.status(400).send(nn_error.createError("0115", "Device association limit exceeded"));
+	}
+	const password = utils.nintendoPasswordHash(decoded[1], me.id);
+	console.log(me.id);
+	console.log(password);
+	if (await utils.verifyPassword(password, me.password.toString()) == true) {
+		res.setHeader("Content-Type", "application/xml");
+		res.status(200).send(utils.makeUserData(me, true));
+		return;
 	} else {
-		logger.error(`[content]: File ${profile_xml} for test data cannot be found.`);
-		res.status(404).send(utils.generateNotFound());
+		res.setHeader("Content-Type", "application/xml");
+		res.status(400).send(nn_error.createError("1105", "Email address, or password, is not valid."));
+		return;
 	}
 })
+
+route.post("/@me/devices/", async (req, res) => {
+	var headers = req.headers;
+	let buffer = Buffer.from(headers["authorization"].toString().slice(6), "base64");
+	let decoded = buffer.toString("utf8").split(" ");
+	var user_id = decoded[0];
+	var email = headers["x-nintendo-email"]; // TODO: Verify email
+	try {
+		var consoleData = await auth.getConsoleDataBySerial(headers['x-nintendo-serial-number']);
+		if (!consoleData) {
+			if (auth.createConsoleData(headers['x-nintendo-device-id'], headers['x-nintendo-serial-number'], headers['x-nintendo-device-type'], headers['x-nintendo-platform-id'], headers['x-nintendo-system-version'], headers['accept-language'], headers['x-nintendo-region'], headers['x-nintendo-country'], headers['x-nintendo-device-cert']) == false) {
+				logger.error(`[people]: Failed to create console data!\n
+			device id: ${headers['x-nintendo-device-id']}\n
+			serial: ${headers['x-nintendo-serial-number']}`);
+			}
+		}
+		user = await anid.getUserDataByUserId(user_id);
+		if (user.deviceId_wup && req.headers["x-nintendo-platform-id"] == 1 || user.deviceId_ctr && req.headers["x-nintendo-platform-id"] == 0) {
+			res.status(400).send(nn_error.createError("0115", "Device association limit exceeded<"));
+		}
+		const password = utils.nintendoPasswordHash(decoded[1], user.id);
+		if (await utils.verifyPassword(password, user.password.toString())) {
+			if (req.headers["x-nintendo-platform-id"] == 1) {
+				knex('people').where('id', user.id).update({ deviceId_wup: req.headers["x-nintendo-device-id"] })
+					.then(function () {
+						res.status(200).send(utils.makeUserData(user));
+					});
+			} else {
+				knex('people').where('id', user.id).update({ deviceId_ctr: req.headers["x-nintendo-device-id"] })
+					.then(function () {
+						res.status(200).send(utils.makeUserData(user));
+					});
+			}
+		}
+	} catch (e) {
+		console.error(e);
+		res.status(500).send(utils.generateServerError());
+	}
+})
+
+route.post("/@me/devices/@current/attributes", async (req, res) => {
+	res.send('');
+})
+
+route.get("/@me/emails", async (req, res) => {
+	const me = req.me;
+	res.send(xmlbuilder.create({
+		emails: {
+			email: {
+				address: me.email.email,
+				id: me.email.id,
+				parent: "N",
+				primary: "Y",
+				reachable: me.email.reachable,
+				type: me.email.type,
+				updated_by: me.email.updated_by,
+				validated: me.email.validated,
+			}
+		}
+	}).end({ pretty: false, allowEmpty: true }));
+});
+
+route.post("/@me", async (req, res) => {
+	const person = req.body.person;
+	const gender = person.gender ? person.gender : req.me.gender;
+	const region = person.region ? person.region : req.me.region;
+	//const timezoneName = person.tz_name ? person.tz_name : req.me.tz_name; // TODO: Update UTC offset with timezone
+	const marketingFlag = person.marketing_flag ? person.marketing_flag : req.me.marketing_flag;
+	const offDeviceFlag = person.off_device_flag ? person.off_device_flag : req.me.off_device_flag;
+	try {
+		await knex("people").where('id', me.id).update({
+			gender: gender,
+			region: region,
+			marketing_flag: marketingFlag,
+			off_device_flag: offDeviceFlag
+		});
+		res.setHeader("Content-Type", "application/xml");
+		res.status(200);
+	} catch (e) {
+		console.log(e);
+		res.status(500).send(utils.generateServerError);
+	}
+});
+
+route.put("/@me/miis/@primary", (req, res) => {
+	const token = req.headers['authorization'].toString();
+	const me = req.me;
+	const mii = req.body.mii;
+	knex("mii")
+		.where('pid', me.id)
+		.update({
+			name: mii.name,
+			data: mii.data.toString().replace("\n", ""),
+			primary_mii: mii.primary
+		})
+		.then(function () {
+			knex("people")
+				.where('id', me.id)
+				.update({
+					updated_at: knex.fn.now()
+				})
+				.then(function () {
+					res.send(''); // Patch for 3DS not accepting node's res.sendStatus(200); sending "OK" in response body
+				})
+				.catch(err => {
+					logger.error(`[people]: Failed to update updated_at time for ${me.user_id}! Will return success anyway.`);
+					res.send('');
+				})
+		})
+		.catch(err => {
+			logger.error(`[people]: Failed to update Mii for ${me.user_id}`);
+			res.status(500).send(utils.generateServerError());
+		});
+});
 
 /* 
 	This is the api path the Wii U/3DS calls to when deleting an account from the server.
@@ -98,18 +250,9 @@ route.post("/@me/deletion", (req, res) => {
 })
 
 /*
-	This is a test path.
-	Content-Type: XML
-*/
-route.get("/test", (req, res) => {
-	res.setHeader("Content-Type", "application/xml")
-	res.send(nn_error.createError(1230, "URGAY"));
-})
-
-/*
 	This is the API path the Wii U/3DS calls to when asking if a Network ID is already taken.
 	Content-Type: XML
-
+	
 	If the NNID is already in use, you should send a 401.
 	If the NNID is available, send a 200.
 	You don't need to send any data with the request.(?)
@@ -126,7 +269,7 @@ route.get("/:network_id", (req, res) => {
 			if (rows.length != 0) {
 				res.status(401).send(nn_error.createError("0100", "Account ID already exists"));
 			} else {
-				res.status(200).send(req.params.network_id);
+				res.status(200).send();
 			}
 		})
 		.catch(err => {

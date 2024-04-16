@@ -28,6 +28,10 @@ module.exports = [
         route: require("./v1/api/admin.js")
     },
     {
+        path: "/v2/api/oauth",
+        route: require("./v2/api/oauth.js")
+    },
+    {
         path: "/webui",
         route: require("./webui/index.js")
     }

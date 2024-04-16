@@ -1,7 +1,8 @@
 {
     "env": {
         "_comment": "Never run the server in production with debug!",
-        "debug": true
+        "debug": true,
+        "logLevel": 1
     },
 
     "http": {
@@ -18,6 +19,7 @@
 
     "encryption_keys": {
         "_comment": "First value is the AES-256 key, second is the AES-256 IV",
-        "service_token": [ "aes256encryptionkey", "aes256encryptioniv" ]
+        "service_token": [ "aes256encryptionkey", "aes256encryptioniv" ],
+        "saltRounds": 12
     }
 }

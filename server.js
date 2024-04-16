@@ -35,14 +35,18 @@ try {
 }
 
 //Log all incoming HTTP requests
-app.use((req, res, next) => {
-  logger.http_log(req);
-  next();
-});
+if(config.env.logLevel > 0){
+  app.use((req, res, next) => {
+    logger.http_log(req);
+    next();
+  });
+}
 
-if(config.env.debug){
+if(config.env.debug && config.env.logLevel > 1){
   app.use(logHeaders);
 }
+
+//app.set('static buffer size', 1024);
 
 //Turns all XML request data into a readable JSON file
 app.use(bodyParser.xml())
@@ -59,6 +63,12 @@ for (const route of routes) {
   app.use(route.path, route.route)
 }
 
+app.get("/", (req, res) => {
+  res.setHeader("Location", "/webui");
+  res.sendStatus(302);
+  // I AM SUCH A REBEL. (I didn't use res.redirect())
+});
+
 app.use("/*", (req, res) => {
   if(config.env.debug){
     logger.warn(`Unknown route!`);
@@ -69,5 +79,4 @@ app.use("/*", (req, res) => {
 
 app.listen(config.http.port, async () => {
   logger.log(`[main]: AltNNAS listening on ${config.http.port}`);
-  console.log(await utils.generateServiceToken());
 })

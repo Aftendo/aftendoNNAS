@@ -45,7 +45,7 @@ route.get("/time_zones/:region/:lang", (req, res) => {
     if (fs.existsSync(timezoneList)) {
         res.sendFile(timezoneList);
     } else {
-        logger.error(`[content]: File ${tz_thingy} for timezones cannot be found.`);
+        logger.error(`[content]: File ${timezoneList} for timezones cannot be found.`);
         res.status(404).send(utils.generateNotFound());
     }
 });
