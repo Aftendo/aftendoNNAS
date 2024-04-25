@@ -2,7 +2,6 @@
 (aka altNNAS) this was/is a take on arian's "altnnas" server (nintendo network account server?)
 # Why?
 for fun, mostly.
-Nex servers will probably be placed under altNEX-S or something.
 
 This is still a heavy work in progress so please don't use it, you don't want to mess up the accounts on your Wii U or anything.
 # Who's making this?
