@@ -5,7 +5,7 @@ for fun, mostly.
 
 This is still a heavy work in progress so please don't use it, you don't want to mess up the accounts on your Wii U or anything.
 # Who's making this?
-@TermOfficial, ~~@NoNameGivenCoder,~~ ~~@TraceEntertains,~~ (If you still want to work on this trace, dm me then, or just f*cking fork it and do whatever you want) @a1429-fan, and @Rix565.
+@TermOfficial, ~~@NoNameGivenCoder,~~ ~~@TraceEntertains,~~ @a1429-fan, and @Rix565.
 # Can I use this?
 Yeah. Just make sure it's open source, and disclose your changes. (Basically fork the repo and make your changes there!! Then the git history will have all the changes disclosed, basically. I think. Don't take that as legal advice.)
 # I see code from Pretendo.
